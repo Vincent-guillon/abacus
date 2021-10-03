@@ -10,11 +10,11 @@ Base = declarative_base()
 
 def init_databases():
     #Create database if it doesn't exist + engine
-    engine = create_engine('sqlite:///bills_management.db', echo=True)
+    engine = create_engine('sqlite:///abacus.db', echo=True)
     Base.metadata.create_all(engine)
 
     #Connect to database and fill it with default parameters
-    return db_connection("bills_management.db")
+    return db_connection("abacus.db")
 
 
 def db_connection(abacus_db_path):
@@ -39,16 +39,28 @@ def db_connection(abacus_db_path):
                                         login CHAR(50) NOT NULL,
                                         password CHAR(50) NOT NULL
                                     ); """
+    sql_insert_users = """INSERT INTO users
+                                    (id, firstName, lastName, login, password)
+                                    VALUES
+                                    (1,'admin','admin', 'admin', 'admin')"""
 
     conn = None
     try:
         conn = sqlite3.connect(abacus_db_path)
         c = conn.cursor()
         _execute_query(conn, sql_create_bills_table)
-        c.execute(''' SELECT count(id) FROM bills ''')
+        _execute_query(conn, sql_create_users_table)
+        c.execute(''' SELECT count(id) FROM users ''')
 
         rows = c.fetchall()
         print("Contenu de isFull", rows)
+
+        if rows == [(0,)]:
+            print("Database empty. Filling it")
+            _execute_query(conn, sql_insert_users)
+        
+        print("Test de fonctionnement")
+        print(get_all_from_table(conn))
 
         return conn
     except Error as e:
@@ -64,8 +76,9 @@ def _execute_query(conn, sql_query):
         print(e)
 
 
-def get_bills(conn):
+def get_all_from_table(conn):
     cur = conn.cursor()
-    cur.execute("SELECT * FROM bills")
+    cur.execute("SELECT * FROM users")
     rows = cur.fetchall()
     return rows[0]
+

@@ -11,5 +11,3 @@ class Bills(Resource):
     def get(self):
         jwt = get_token(current_app)
         return 'Worked'
-        dddd
-
